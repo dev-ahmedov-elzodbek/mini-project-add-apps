@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="uz">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ShopPanel — Mahsulotlar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+    <style>
+      /* ─── TOKENS ─────────────────────────────── */
+      :root {
+        --bg:        #0d0f14;
+        --surface:   #161921;
+        --surface2:  #1e222d;
+        --border:    #2a2f3d;
+        --accent:    #6c63ff;
+        --accent2:   #ff6b6b;
+        --success:   #43e97b;
+        --warning:   #f9ca24;
+        --text:      #e8eaf0;
+        --muted:     #6b7280;
+        --radius:    12px;
+        --transition: 0.2s ease;
+      }
+
+      /* ─── RESET ──────────────────────────────── */
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html { scroll-behavior: smooth; }
+      body {
+        font-family: "DM Sans", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        line-height: 1.6;
+      }
+
+      /* ─── LAYOUT ─────────────────────────────── */
+      .app {
+        display: grid;
+        grid-template-rows: auto 1fr;
+        min-height: 100vh;
+      }
+
+      /* ─── HEADER ─────────────────────────────── */
+      header {
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        padding: 18px 40px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+      .logo {
+        font-family: "Syne", sans-serif;
+        font-weight: 800;
+        font-size: 22px;
+        letter-spacing: -0.5px;
+        color: var(--text);
+      }
+      .logo span { color: var(--accent); }
+      .header-meta {
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .status-dot {
+        display: inline-block;
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: var(--success);
+        margin-right: 6px;
+        animation: pulse 2s infinite;
+      }
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50%       { opacity: 0.4; }
+      }
+
+      /* ─── MAIN ───────────────────────────────── */
+      main {
+        padding: 40px;
+        max-width: 1200px;
+        margin: 0 auto;
+        width: 100%;
+      }
+
+      /* ─── TOAST ──────────────────────────────── */
+      #toast {
+        position: fixed;
+        top: 24px; right: 24px;
+        padding: 14px 22px;
+        border-radius: var(--radius);
+        font-size: 14px;
+        font-weight: 500;
+        z-index: 999;
+        transform: translateX(120%);
+        transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        max-width: 320px;
+      }
+      #toast.show   { transform: translateX(0); }
+      #toast.success { background: #0f2e1e; color: var(--success); border: 1px solid var(--success); }
+      #toast.error   { background: #2e0f0f; color: var(--accent2); border: 1px solid var(--accent2); }
+
+      /* ─── TOP BAR ────────────────────────────── */
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 28px;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      .page-title {
+        font-family: "Syne", sans-serif;
+        font-size: 26px;
+        font-weight: 700;
+      }
+      .page-title span { color: var(--accent); }
+
+      /* ─── STATS ──────────────────────────────── */
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 32px;
+      }
+      .stat-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        transition: border-color var(--transition);
+      }
+      .stat-card:hover { border-color: var(--accent); }
+      .stat-label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+      }
+      .stat-value {
+        font-family: "Syne", sans-serif;
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text);
+      }
+      .stat-value.accent  { color: var(--accent); }
+      .stat-value.warning { color: var(--warning); }
+
+      /* ─── TWO COLUMN ─────────────────────────── */
+      .two-col {
+        display: grid;
+        grid-template-columns: 380px 1fr;
+        gap: 24px;
+        align-items: start;
+      }
+
+      /* ─── FORM CARD ──────────────────────────── */
+      .form-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 28px;
+        position: sticky;
+        top: 90px;
+      }
+      .form-card-title {
+        font-family: "Syne", sans-serif;
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 22px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .form-card-title .dot {
+        width: 10px; height: 10px;
+        border-radius: 50%;
+        background: var(--accent);
+        flex-shrink: 0;
+      }
+      .form-card-title .dot.edit { background: var(--warning); }
+
+      .form-group {
+        margin-bottom: 16px;
+      }
+      label {
+        display: block;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: var(--muted);
+        margin-bottom: 7px;
+      }
+      input[type="text"],
+      input[type="number"] {
+        width: 100%;
+        padding: 11px 14px;
+        background: var(--surface2);
+        border: 1.5px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        font-family: "DM Sans", sans-serif;
+        font-size: 14px;
+        transition: border-color var(--transition);
+        outline: none;
+      }
+      input::placeholder { color: var(--muted); }
+      input:focus { border-color: var(--accent); }
+      input.error-field { border-color: var(--accent2); }
+
+      input[type="hidden"] { display: none; }
+
+      .form-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 22px;
+      }
+
+      /* ─── BUTTONS ────────────────────────────── */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        font-family: "DM Sans", sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all var(--transition);
+        white-space: nowrap;
+      }
+      .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+      .btn-primary  { background: var(--accent); color: #fff; flex: 1; justify-content: center; }
+      .btn-primary:hover:not(:disabled)  { background: #5a52e0; }
+      .btn-ghost    { background: var(--surface2); color: var(--muted); }
+      .btn-ghost:hover { color: var(--text); background: var(--border); }
+      .btn-icon     { padding: 7px 14px; font-size: 13px; border-radius: 7px; }
+      .btn-edit     { background: rgba(249,202,36,0.12); color: var(--warning); }
+      .btn-edit:hover { background: rgba(249,202,36,0.22); }
+      .btn-delete   { background: rgba(255,107,107,0.12); color: var(--accent2); }
+      .btn-delete:hover { background: rgba(255,107,107,0.22); }
+
+      /* ─── TABLE SECTION ──────────────────────── */
+      .table-section {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+      }
+      .table-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+      .table-header-title {
+        font-family: "Syne", sans-serif;
+        font-size: 15px;
+        font-weight: 700;
+      }
+      .search-wrap {
+        position: relative;
+      }
+      .search-wrap input {
+        padding-left: 36px;
+        width: 220px;
+        background: var(--surface2);
+      }
+      .search-icon {
+        position: absolute;
+        left: 11px; top: 50%;
+        transform: translateY(-50%);
+        color: var(--muted);
+        pointer-events: none;
+        font-size: 14px;
+      }
+
+      /* ─── TABLE ──────────────────────────────── */
+      .table-wrap { overflow-x: auto; }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      thead th {
+        padding: 12px 20px;
+        text-align: left;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        border-bottom: 1px solid var(--border);
+        background: var(--surface2);
+        white-space: nowrap;
+      }
+      tbody tr {
+        border-bottom: 1px solid var(--border);
+        transition: background var(--transition);
+      }
+      tbody tr:last-child { border-bottom: none; }
+      tbody tr:hover { background: var(--surface2); }
+      td {
+        padding: 14px 20px;
+        font-size: 14px;
+        vertical-align: middle;
+      }
+      .td-id { color: var(--muted); font-size: 13px; }
+      .td-name { font-weight: 500; }
+      .td-price { font-family: "Syne", sans-serif; font-weight: 600; color: var(--accent); }
+      .td-actions { display: flex; gap: 8px; }
+
+      /* ─── BADGE ──────────────────────────────── */
+      .badge {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+      }
+      .badge-elektronika { background: rgba(108,99,255,0.15); color: #a29bfe; }
+      .badge-mebel       { background: rgba(67,233,123,0.12); color: #43e97b; }
+      .badge-aksesuar    { background: rgba(253,203,110,0.15); color: #fdcb6e; }
+      .badge-default     { background: var(--surface2); color: var(--muted); }
+
+      /* ─── STOCK ──────────────────────────────── */
+      .stock-val { font-weight: 500; }
+      .stock-ok   { color: var(--text); }
+      .stock-low  { color: var(--warning); }
+      .stock-zero { color: var(--accent2); font-weight: 600; }
+
+      /* ─── EMPTY / LOADING ────────────────────── */
+      .table-empty {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--muted);
+      }
+      .table-empty .icon { font-size: 40px; margin-bottom: 12px; }
+      .table-empty p { font-size: 15px; }
+
+      .skeleton td {
+        padding: 16px 20px;
+      }
+      .skel {
+        height: 14px;
+        border-radius: 6px;
+        background: linear-gradient(90deg, var(--surface2) 25%, var(--border) 50%, var(--surface2) 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.4s infinite;
+      }
+      .skel.w-sm  { width: 40px; }
+      .skel.w-md  { width: 100px; }
+      .skel.w-lg  { width: 160px; }
+      .skel.w-btn { width: 80px; height: 28px; border-radius: 7px; }
+      @keyframes shimmer {
+        0%   { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+      }
+
+      /* ─── RESPONSIVE ─────────────────────────── */
+      @media (max-width: 900px) {
+        .two-col { grid-template-columns: 1fr; }
+        .form-card { position: static; }
+        .stats { grid-template-columns: 1fr 1fr; }
+        main { padding: 24px 20px; }
+        header { padding: 14px 20px; }
+      }
+      @media (max-width: 560px) {
+        .stats { grid-template-columns: 1fr; }
+        .table-header { flex-direction: column; align-items: stretch; }
+        .search-wrap input { width: 100%; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+
+      <!-- HEADER -->
+      <header>
+        <div class="logo">Shop<span>Panel</span></div>
+        <div class="header-meta">
+          <span class="status-dot"></span>localhost:3000
+        </div>
+      </header>
+
+      <!-- MAIN -->
+      <main>
+
+        <!-- TOAST -->
+        <div id="toast"></div>
+
+        <!-- TOP BAR -->
+        <div class="topbar">
+          <h1 class="page-title">Mahsulotlar <span>Boshqaruvi</span></h1>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats">
+          <div class="stat-card">
+            <div class="stat-label">Jami mahsulotlar</div>
+            <div class="stat-value accent" id="stat-total">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Umumiy qiymat</div>
+            <div class="stat-value" id="stat-value">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Tugab qolganlar</div>
+            <div class="stat-value warning" id="stat-low">—</div>
+          </div>
+        </div>
+
+        <!-- TWO COLUMN -->
+        <div class="two-col">
+
+          <!-- FORMA -->
+          <div class="form-card">
+            <div class="form-card-title">
+              <div class="dot" id="form-dot"></div>
+              <span id="form-title">Yangi Mahsulot</span>
+            </div>
+
+            <input type="hidden" id="product-id" />
+
+            <div class="form-group">
+              <label for="product-name">Mahsulot nomi</label>
+              <input type="text" id="product-name" placeholder="Masalan: Noutbuk" />
+            </div>
+
+            <div class="form-group">
+              <label for="product-price">Narxi (so'm)</label>
+              <input type="number" id="product-price" placeholder="Masalan: 8500000" min="1" />
+            </div>
+
+            <div class="form-group">
+              <label for="product-category">Kategoriya</label>
+              <input type="text" id="product-category" placeholder="Masalan: Elektronika" />
+            </div>
+
+            <div class="form-group">
+              <label for="product-stock">Ombordagi soni</label>
+              <input type="number" id="product-stock" placeholder="Masalan: 20" min="0" />
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn-primary" id="save-btn">
+                <span id="save-icon">＋</span>
+                <span id="save-label">Qo'shish</span>
+              </button>
+              <button class="btn btn-ghost" id="cancel-btn" style="display:none;">
+                Bekor
+              </button>
+            </div>
+          </div>
+
+          <!-- JADVAL -->
+          <div class="table-section">
+            <div class="table-header">
+              <div class="table-header-title">Mahsulotlar ro'yxati</div>
+              <div class="search-wrap">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="search-input" placeholder="Qidirish..." />
+              </div>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Nomi</th>
+                    <th>Narxi</th>
+                    <th>Kategoriya</th>
+                    <th>Ombor</th>
+                    <th>Amallar</th>
+                  </tr>
+                </thead>
+                <tbody id="products-tbody">
+                  <!-- skeleton -->
+                  <tr class="skeleton">
+                    <td><div class="skel w-sm"></div></td>
+                    <td><div class="skel w-lg"></div></td>
+                    <td><div class="skel w-md"></div></td>
+                    <td><div class="skel w-md"></div></td>
+                    <td><div class="skel w-sm"></div></td>
+                    <td><div class="skel w-btn"></div></td>
+                  </tr>
+                  <tr class="skeleton">
+                    <td><div class="skel w-sm"></div></td>
+                    <td><div class="skel w-lg"></div></td>
+                    <td><div class="skel w-md"></div></td>
+                    <td><div class="skel w-md"></div></td>
+                    <td><div class="skel w-sm"></div></td>
+                    <td><div class="skel w-btn"></div></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </main>
+    </div>
+
+    <!-- ─────────────────────────────────────────
+         O'QUVCHI app.js FAYLINI SHU YERGA ULAYDI
+    ─────────────────────────────────────────── -->
+    <script src="app.js"></script>
+  </body>
+</html>

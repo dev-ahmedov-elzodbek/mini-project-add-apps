@@ -1,0 +1,44 @@
+{
+  "products": [
+    {
+      "id": 1,
+      "name": "Noutbuk",
+      "price": 8500000,
+      "category": "Elektronika",
+      "stock": 15,
+      "createdAt": "2024-01-10T09:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "name": "Telefon",
+      "price": 3200000,
+      "category": "Elektronika",
+      "stock": 40,
+      "createdAt": "2024-01-11T10:30:00.000Z"
+    },
+    {
+      "id": 3,
+      "name": "Stol",
+      "price": 1800000,
+      "category": "Mebel",
+      "stock": 8,
+      "createdAt": "2024-01-12T11:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "name": "Kreslo",
+      "price": 2400000,
+      "category": "Mebel",
+      "stock": 5,
+      "createdAt": "2024-01-13T14:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "name": "Quloqchin",
+      "price": 450000,
+      "category": "Aksesuar",
+      "stock": 0,
+      "createdAt": "2024-01-14T08:00:00.000Z"
+    }
+  ]
+}
